@@ -1,0 +1,93 @@
+# Getting started with Juju
+
+## Installing the client
+
+Since the Juju client will run on just about any operating system, getting started is really simple, but there are a few prerequisites.
+If you're running Juju on Ubuntu the installation is as simple as:
+
+    apt-get install juju
+
+If you're running Juju on Fedora, Arch or another Linux distribution that supports the Snap package format you can install the Snap Daemon then run:
+
+    snap install juju --devmode --beta
+
+On Mac you can install via Brew:
+
+    brew install juju
+
+## Local developement with LXD
+
+For those of us who use the Ubuntu Xenial or later operating system, we can leverage the LXD container technology to test Juju locally using LXD. To do this we need to install it so:
+
+    apt-get install lxd
+    newgrp lxd
+
+## Mediawiki in 4 commands
+
+So we have Juju installed but not currently doing anything, so to get started and show the power of Juju we will deploy a Wikimedia stack to our local computer for this I'm going to leverage my LXD installation. By using LXD not only do I get to deploy a full stack into seperate machines, it also means I can wipe down what I deploy cleanly without leaving installed files and crud all over my laptop when I'm done.
+
+First up we need to bootstrap a controller:
+
+    juju bootstrap lxd lxd
+
+What we are doing here is starting a controller node inside a LXD container. This node will manage all the Juju charms we deploy to the platform. Of course the power of Juju means it doesn't have to be LXD, it could be EC2, Azure, MAAS or something else, we're just using LXD as it offers conveniance and zero cost.
+
+Whilst the bootstrap happens you should see it downloading a cloud image for LXD. Once this is done it will then fetch the Juju GUI and bootstrap the node. Once the bootstrap is finished you will then be able to write:
+
+    juju status
+
+and it will print out the status of the LXD controller, which of course is empty because you haven't deployed a workload to it.
+
+To deploy our Mediawiki stack to Juju we can then run:
+
+    juju deploy wiki-simple
+    watch juju status
+
+This may take some time depending on the speed of your connection. This time instead of using a Xenial image, LXD will download a Trusty image because the charms were configured to run on Ubuntu Trusty, once this has been done the image will be cached so the next time you run LXD the startup will be instant. When this is done you will see the Juju Units being assign IP addresses and the messages start to change as the charms progress through their installation routine.
+
+When the installation is complete the message field will turn blank which indicates these charms are ready. To check we can now visit the IP address of the wiki/0 unit in a browser and we should be able to see the MediaWifi landing page:
+
+
+So in this little tutorial we have started up Mediawiki and connected it to MySQL automatically, the fact Mediawiki is running tells us the database connection has been configured and the platform is setup correctly, even though we've not written a line of code or set any database usernames or passwords whilst running the install. Not bad for a start and of the 4 commands above only 2, the bootstrap and the deploy command are actually required.
+
+So lets take this a little further. First of all we will remove the bundle of charms we have deployed:
+
+    juju remove-application wiki
+    juju remove-application mysql
+
+This will destroy the machines, containers in our case, that the applications reside on.
+
+Next we will deploy the wiki-scalable bundle, this is designed to offer a scalable Wiki service and contains an extra Memcached instance, MariaDB instead of MySQL and is fronted by HAProxy:
+
+    juju deploy wiki-scalable
+    watch juju status
+
+This time you will see 4 units start by default, each with their own IP address and ports available and again you can navigate to the Wiki IP address and see the Wiki availble. But this is a `scalable` Wiki and so its fronted by HA Proxy. If we visit the IP address of the unit named loadbalancer/0 we can see the Wiki landing page the as well. Once again we've written no code, HA Proxy just knows of the Wiki availablilty by utilising the Juju hooks and inter charm relations.
+
+We can easily demonstrate Juju's scaling ability by running:
+
+    juju add-unit wiki
+    watch juju status
+
+You will see in the status page Juju start another Wiki unit named wiki/2 and after a short period of time that unit will become ready. Once again, because of the relations between charms, you will see that the charm becomes available and the loadbalancer starts using the additional unit to balance the load. But how do you prove that? We can shut down the original Wiki node:
+
+    juju remove-unit wiki/1
+    watch juju status
+
+After a few seconds you'll see wiki/1 removed from the status because Juju has instructed LXD to shutdown that container, but because I had deployed Mediawiki in a loadbalanced manner, if I refresh my webpage Mediawiki is still available to me and my end users.
+
+Of course not everyone wants to use a command line and Juju ships with an excellent GUI which is simple to use and see exactly what you have deployed on your cluster:
+
+    juju gui --show-credentials
+
+This will open your webbrowser on the landing page and print your login details out to the terminal which will allow you to copy and paste them into the login prompt. When you hit login you will be dropped into the canvas view which will display exactly what charms you have deployed.
+
+
+## Key Juju Concepts We've Seen So Far
+
+* Bootstrap - Each Juju environment needs bootstrapping, be it EC2, or LXD Local. This creates the required controller and configuration to ensure all your charms are deployed successfully.
+* Charm - A piece of software along with its metadata and configuration information and code. A regular charm will define how the software is installed, which other pieces of software are allowed to `relate` to it and also what happens when those charms relate.
+* Bundle - A collection of charms to ease installation of multi charm platforms.
+* Unit - An instance of a charm within the Juju environment.
+* Machine - A container or physical server on which charms can be installed.
+* LXD - Container technology, similar to Docker but serves operating system containers instead of application containers.

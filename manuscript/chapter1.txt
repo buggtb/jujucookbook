@@ -1,2 +1,7 @@
-# Chapter 1
+# What is Juju?
 Hello, world!
+
+## A brief history of Systems Automation
+
+## Application Modelling vs Systems Orchestration
+
