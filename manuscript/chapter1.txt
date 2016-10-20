@@ -1,7 +1,27 @@
 # What is Juju?
-Hello, world!
 
 ## A brief history of Systems Automation
 
+Systems automation tooling has been around for a long time. Puppet was founded a decade ago, Chef 7 years ago, Ansible 4 years ago. Software deployment time can be dramatically slashed if an IT department uses(and reuses) code instead of human interaction with the servers themselves. Deploying software automatically also reduces the chance of mistakes being introduced into the deployment, Systems Administrators can easily test the deplyment, test for failure, test for success, it makes the whole deployment routine more robust and much less likely to fail.
+
+In ensuring seamless deployment, users get faster access to products, SA's can spend their time working on more meaningful tasks instead of patching production code, which increases the value of the IT department within a business.
+
+### TODO MORE SYSTEMS AUTOMATION HISTORY
+
 ## Application Modelling vs Systems Orchestration
 
+The key to Juju is the application modelling paradigm. When designing systems with Puppet for example, the process is very granular, when designing systems with Juju the application as a whole is king and where you place it and how that is done comes second. Let me give you an example:
+
+If I were to deploy MySQL with Puppet, I would create the various configuration files for my server and add my MySQL puppet module declaration to one of my Puppet files. I might then decide that I want to install MySQL on an EC2 node, so I head over to Amazon, spin up my node, install Puppet onto that server, fetch my Puppet declarations and run Puppet on it. Of course that describes a very simple single node system with no Puppet master, but its perfectly viable.
+
+In comparison with Juju I can do `juju bootstrap myec2controller aws/eu-west-1 && juju deploy mysql` and that is it, in 2 commands I've created a place to model my applications and told it to launch a MySQL node in that control space.
+
+Of course thats a very simple example, the power of Juju comes from its relations and the metadata passed over those relations. The relations allow different pieces of software to communicate with one another in predefined manner. For example, if I connect MySQL to my webapp, I would like my webapp to realise this connection has taken place and have it seed a MySQL database with a default schema and create a username and password for that database, this is all perfectly viable using Juju. If my app is going to seed the database, the MySQL charm needs to know that there is a service wanting to use MySQL and it has to tell that service how to connect to it.
+
+I could take this further and say that I would like my app to run on a m4.medium and MySQL to run on m4.xlarge, this allows me to model my application on different hardware with the minimum of fuss.
+
+Juju allows us to model a number of different aspects of operations. It allows us to model raw materials, it doesn't matter what I deploy, it could be a deb file from apt, it could be a tar ball from sourceforge, it could be an existing puppet module you just want to abstract away. Similarly it allows us to model the operations themselves. What is the process for installation? What happens when I remove the software? What happens if people want to run more than one instance of my software? What ports are available to end users? And so on. Charms also let me model that relation, so what happens if I want to be able to monitor it? I may not know what monitoring software is going to be connected, but I can tell it useful information via the relation API. All theses models do is allow us to describe how we want our application to look, how we want it to interact with other applications and how we want it to scale on underlying hardware. It's like painting a picture with systems operations.
+
+Another aspect of the Juju deployment is its lack of interest in the underlying hardware. It's not container based, so there are no application containers with lots of code pre installed. As long as you can provide an image for the the operating system the charm was built for, it will install and run pretty much anywhere. Out of the box there is support for a lot of the mainstream cloud providers but there is also support for the manual provider and the LXD Local provider. Should you want to deploy your applications on to systems that already exist or to a cloud service there is no support for, you could choose to use the manual provider and deploy the applications to servers available anywhere in the world, as long as it has access to SSH, Juju is happy. LXD Local is fantastic for local development, using LXD containers on a local server you can spin up entire environments inside multiple containers to prototype the scalablility, networking and more, ensuring when you deploy your application to the production hardware, the charms deploy as expected.
+
+The charm ecosystem allows fully utilise the build, development and deployment cycles, whilst maximising reuse and reusability because of the lack of requirements on physical infrastructure.
