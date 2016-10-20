@@ -1,5 +1,7 @@
-# Advanced Networking
+# Advanced Features
 
-# Juju High Availability
+## Advanced Networking
 
-# Juju REST API
+## Juju High Availability
+
+## Juju REST API
