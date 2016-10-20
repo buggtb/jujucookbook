@@ -26,9 +26,9 @@ Another aspect of the Juju deployment is its lack of interest in the underlying 
 
 The charm ecosystem allows fully utilise the build, development and deployment cycles, whilst maximising reuse and reusability because of the lack of requirements on physical infrastructure.
 
-# Getting started with Juju
+## Getting started with Juju
 
-## Installing the client
+### Installing the client
 
 Since the Juju client will run on just about any operating system, getting started is really simple, but there are a few prerequisites.
 If you're running Juju on Ubuntu the installation is as simple as:
@@ -43,14 +43,14 @@ On Mac you can install via Brew:
 
     brew install juju
 
-## Local developement with LXD
+### Local developement with LXD
 
 For those of us who use the Ubuntu Xenial or later operating system, we can leverage the LXD container technology to test Juju locally using LXD. To do this we need to install it so:
 
     apt-get install lxd
     newgrp lxd
 
-## Mediawiki in 4 commands
+### Mediawiki in 4 commands
 
 So we have Juju installed but not currently doing anything, so to get started and show the power of Juju we will deploy a Wikimedia stack to our local computer for this I'm going to leverage my LXD installation. By using LXD not only do I get to deploy a full stack into seperate machines, it also means I can wipe down what I deploy cleanly without leaving installed files and crud all over my laptop when I'm done.
 
@@ -111,7 +111,7 @@ Of course not everyone wants to use a command line and Juju ships with an excell
 This will open your webbrowser on the landing page and print your login details out to the terminal which will allow you to copy and paste them into the login prompt. When you hit login you will be dropped into the canvas view which will display exactly what charms you have deployed.
 
 
-## Key Juju Concepts We've Seen So Far
+### Key Juju Concepts We've Seen So Far
 
 * Bootstrap - Each Juju environment needs bootstrapping, be it EC2, or LXD Local. This creates the required controller and configuration to ensure all your charms are deployed successfully.
 * Charm - A piece of software along with its metadata and configuration information and code. A regular charm will define how the software is installed, which other pieces of software are allowed to `relate` to it and also what happens when those charms relate.
